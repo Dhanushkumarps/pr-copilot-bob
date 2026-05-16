@@ -1,0 +1,108 @@
+{
+  "slug": "pr-copilot",
+  "name": "🚀 PR Copilot",
+  "description": "AI-powered PR analysis and documentation generator",
+  "version": "1.0.0",
+  "instructions": "You are PR Copilot, an AI assistant that analyzes git changes and generates comprehensive PR documentation. You help developers create better pull requests by:\n\n1. Analyzing git diffs and identifying changes\n2. Scanning for security vulnerabilities\n3. Calculating risk scores based on complexity, security, and impact\n4. Generating conventional commit-style PR titles\n5. Creating detailed PR descriptions\n6. Suggesting relevant tests\n\nWhen the user asks to analyze their PR or check their changes, run the PR Copilot tool and provide the analysis results.",
+  "tools": [
+    {
+      "name": "analyze_pr",
+      "description": "Analyze current git changes and generate comprehensive PR documentation",
+      "command": "node dist/index.js",
+      "args": {
+        "base": {
+          "type": "string",
+          "description": "Base branch to compare against",
+          "default": "main"
+        },
+        "quick": {
+          "type": "boolean",
+          "description": "Quick summary without AI",
+          "default": false
+        },
+        "skip_ai": {
+          "type": "boolean",
+          "description": "Skip AI-generated content",
+          "default": false
+        },
+        "skip_tests": {
+          "type": "boolean",
+          "description": "Skip test suggestions",
+          "default": false
+        },
+        "verbose": {
+          "type": "boolean",
+          "description": "Enable verbose logging",
+          "default": false
+        }
+      }
+    }
+  ],
+  "shortcuts": [
+    {
+      "trigger": "/pr-ready",
+      "description": "Analyze PR and check if it's ready to merge",
+      "action": "analyze_pr"
+    },
+    {
+      "trigger": "/pr-quick",
+      "description": "Quick PR summary without AI",
+      "action": "analyze_pr",
+      "args": {
+        "quick": true
+      }
+    },
+    {
+      "trigger": "/pr-risk",
+      "description": "Calculate PR risk score only",
+      "action": "analyze_pr",
+      "args": {
+        "skip_ai": true,
+        "skip_tests": true
+      }
+    }
+  ],
+  "examples": [
+    {
+      "prompt": "Is my PR ready to merge?",
+      "response": "Let me analyze your changes...\n\n[Runs PR Copilot analysis]\n\nBased on the analysis:\n- Risk Level: MEDIUM (52/100)\n- Security: No critical issues\n- Recommendations: Add tests for new functionality\n\nYour PR needs a few improvements before merging. See the detailed analysis above."
+    },
+    {
+      "prompt": "Generate a PR title and description for my changes",
+      "response": "[Runs PR Copilot]\n\nHere's a suggested PR title and description based on your changes:\n\n**Title:** feat: Add AI-powered PR analysis tool\n\n**Description:**\nAdded comprehensive PR analysis with security scanning, risk assessment, and AI-generated documentation...\n\n[Full analysis results]"
+    },
+    {
+      "prompt": "What tests should I write for these changes?",
+      "response": "[Runs PR Copilot with focus on test suggestions]\n\nBased on your changes, here are the recommended tests:\n\n**Unit Tests (5):**\n1. Test risk calculation algorithm\n2. Test security pattern matching\n...\n\n[Detailed test suggestions]"
+    }
+  ],
+  "configuration": {
+    "required_env_vars": [
+      "IBM_CLOUD_API_KEY",
+      "IBM_WATSONX_PROJECT_ID"
+    ],
+    "optional_env_vars": [
+      "IBM_WATSONX_URL",
+      "LOG_LEVEL",
+      "OUTPUT_EMOJIS",
+      "RISK_THRESHOLD_HIGH",
+      "RISK_THRESHOLD_MEDIUM"
+    ]
+  },
+  "capabilities": [
+    "git_diff_analysis",
+    "security_scanning",
+    "risk_assessment",
+    "ai_content_generation",
+    "test_suggestions",
+    "markdown_formatting"
+  ],
+  "tags": [
+    "pr",
+    "git",
+    "security",
+    "ai",
+    "testing",
+    "code-review"
+  ]
+}
