@@ -232,7 +232,7 @@ function suggestChangeSplit(diffResult: GitDiffResult): string[] {
  * Calculate critical files risk score
  */
 export function calculateCriticalFilesRisk(
-  diffResult: GitDiffResult,
+  _diffResult: GitDiffResult,
   changeSummary: ChangeSummary
 ): CriticalFilesRiskAnalysis {
   logger.debug('Calculating critical files risk', 'RiskScoring', {
