@@ -1,4 +1,6 @@
+import * as dotenv from 'dotenv';
 import { WatsonXAI } from '@ibm-cloud/watsonx-ai';
+import { IamAuthenticator } from 'ibm-cloud-sdk-core';
 import {
   GraniteRequestParams,
   GraniteResponse,
@@ -15,6 +17,9 @@ import {
 } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { getConfig } from '../utils/config';
+
+// Load environment variables explicitly
+dotenv.config();
 
 /**
  * Default generation options
@@ -61,21 +66,35 @@ export class GraniteClient {
       cacheTTL: config?.cacheTTL ?? 3600000, // 1 hour
     };
 
-    // Initialize watsonx.ai client
+    // Initialize watsonx.ai client with explicit authentication
     try {
-      this.client = WatsonXAI.newInstance({
+      // Validate API key is present
+      if (!this.config.apiKey) {
+        throw new Error('IBM_CLOUD_API_KEY is not set in environment variables');
+      }
+
+      // Create IAM authenticator with API key directly from environment
+      const authenticator = new IamAuthenticator({
+        apikey: this.config.apiKey,
+      });
+
+      // Initialize WatsonXAI client with explicit authenticator
+      this.client = new WatsonXAI({
         version: '2024-05-31',
+        authenticator: authenticator,
         serviceUrl: this.config.url,
-        watsonxAiApikey: this.config.apiKey,
       });
 
       logger.info('Granite client initialized', 'GraniteClient', {
         url: this.config.url,
         modelId: this.config.modelId,
+        projectId: this.config.projectId,
       });
     } catch (error: any) {
       logger.error('Failed to initialize Granite client', 'GraniteClient', {
         error: error.message,
+        apiKeyPresent: !!this.config.apiKey,
+        projectIdPresent: !!this.config.projectId,
       });
       throw new AuthenticationError('IBM watsonx.ai', error.message);
     }
@@ -103,10 +122,9 @@ export class GraniteClient {
     });
 
     try {
-      // Build request parameters
+      // Build request parameters (use camelCase for IBM SDK)
       const params: any = {
         modelId: this.config.modelId,
-        model_id: this.config.modelId,
         input: prompt,
         parameters: {
           max_new_tokens: genOptions.maxTokens!,
@@ -115,7 +133,6 @@ export class GraniteClient {
           repetition_penalty: 1.05,
         },
         projectId: this.config.projectId,
-        project_id: this.config.projectId,
       };
 
       // Generate with retries

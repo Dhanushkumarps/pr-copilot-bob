@@ -92,15 +92,38 @@ export class DiffAnalyzer {
 
     if (stagedOnly) {
       // Get staged changes only
+      console.log('🔍 Running: git diff --cached (staged changes)');
       diffContent = await this.gitExecutor.getDiff(undefined, undefined, {
         staged: true,
       });
-    } else if (baseBranch) {
-      // Compare against base branch
-      diffContent = await this.gitExecutor.getDiff(baseBranch, 'HEAD');
     } else {
-      // Get all changes in working directory
-      diffContent = await this.gitExecutor.getDiff();
+      // Try multiple strategies to find changes
+      
+      // Strategy 1: Try staged changes first (git diff --cached)
+      console.log('🔍 Running: git diff --cached (staged changes)');
+      diffContent = await this.gitExecutor.getDiff(undefined, undefined, {
+        staged: true,
+      });
+
+      // Strategy 2: If no staged changes, try uncommitted changes (git diff HEAD)
+      if (!diffContent || diffContent.trim().length === 0) {
+        console.log('🔍 No staged changes. Running: git diff HEAD (uncommitted changes)');
+        diffContent = await this.gitExecutor.getDiff('HEAD');
+      }
+
+      // Strategy 3: If no HEAD changes, try against base branch (git diff main)
+      if (!diffContent || diffContent.trim().length === 0) {
+        const branch = baseBranch || 'main';
+        console.log(`🔍 No HEAD changes. Running: git diff ${branch} (branch comparison)`);
+        
+        // Check if base branch exists before comparing
+        const branchExists = await this.gitExecutor.branchExists(branch);
+        if (branchExists) {
+          diffContent = await this.gitExecutor.getDiff(branch, 'HEAD');
+        } else {
+          console.log(`⚠️  Branch '${branch}' does not exist, skipping branch comparison`);
+        }
+      }
     }
 
     // TODO: Handle untracked files if includeUntracked is true

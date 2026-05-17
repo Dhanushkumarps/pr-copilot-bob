@@ -211,8 +211,9 @@ export class GitExecutor {
 
     let command = 'git diff';
 
+    // Add --cached flag for staged changes (must come before refs)
     if (options.staged) {
-      command += ' --staged';
+      command += ' --cached';
     }
 
     if (base && head) {
@@ -223,6 +224,8 @@ export class GitExecutor {
 
     // Add unified diff format with more context
     command += ' --unified=3';
+
+    logger.debug(`Executing diff command: ${command}`, 'GitExecutor');
 
     const result = await this.execute(command);
 
